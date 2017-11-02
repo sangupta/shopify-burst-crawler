@@ -9,38 +9,53 @@ The `junit` test case below depicts on how the crawler can be used within anothe
 application:
 
 ```java
-    @Test
-    public void testCrawler() {
-        // declare crawler
-        BurstCrawler crawler = new BurstCrawler();
-        
-        // wire the HttpService to use
-        crawler.setHttpService(new DefaultHttpServiceImpl());
-        
-        // crawl just one page
-        // pass a value of zero or negative to crawl all pages available
-        crawler.crawl(1);
-        Assert.assertTrue(crawler.getLastPage() > 100);
-        
-        // find images that were crawled
-        List<BurstImage> images = crawler.getImages();
-        Assert.assertNotNull(images);
-        Assert.assertTrue(images.size() > 0);
-        
-        // get image details for just one image
-        BurstImage image = images.get(0);
-        crawler.populateImageData(Arrays.asList(new BurstImage[] { image }));
-        
-        Assert.assertNotNull(image.author);
-        Assert.assertNotNull(image.authorUrl);
-        Assert.assertNotNull(image.description);
-        Assert.assertNotNull(image.homeUrl);
-        Assert.assertNotNull(image.license);
-        Assert.assertNotNull(image.title);
-        Assert.assertNotNull(image.url);
-        Assert.assertNotNull(image.tags);
-        Assert.assertTrue(image.tags.size() > 0);        
-    }
+@Test
+public void testCrawler() {
+    // declare crawler
+    BurstCrawler crawler = new BurstCrawler();
+    
+    // wire the HttpService to use
+    crawler.setHttpService(new DefaultHttpServiceImpl());
+    
+    // crawl just one page
+    // pass a value of zero or negative to crawl all pages available
+    crawler.crawl(1);
+
+    // or you may use the following method to crawl all images
+    // by scanning and moving across pages
+    crawler.crawl();
+
+    Assert.assertTrue(crawler.getLastPage() > 100);
+    
+    // find images that were crawled
+    List<BurstImage> images = crawler.getImages();
+    Assert.assertNotNull(images);
+    Assert.assertTrue(images.size() > 0);
+    
+    // get image details for just one image
+    BurstImage image = images.get(0);
+
+    // this takes in a list of all images that need to be
+    // prepopulated metadata for given images
+    // this method is not dependent on the crawler.crawl() method
+    // and thus can be used independently
+    crawler.populateImageData(Arrays.asList(new BurstImage[] { image }));
+
+    // you may also use the following method to populate
+    // metadata for all images that were just crawled by this
+    // crawler instance
+    crawler.populateImageData();
+    
+    Assert.assertNotNull(image.author);
+    Assert.assertNotNull(image.authorUrl);
+    Assert.assertNotNull(image.description);
+    Assert.assertNotNull(image.homeUrl);
+    Assert.assertNotNull(image.license);
+    Assert.assertNotNull(image.title);
+    Assert.assertNotNull(image.url);
+    Assert.assertNotNull(image.tags);
+    Assert.assertTrue(image.tags.size() > 0);        
+}
 ```
 
 ## Downloads

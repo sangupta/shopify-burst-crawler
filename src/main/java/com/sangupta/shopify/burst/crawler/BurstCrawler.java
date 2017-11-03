@@ -79,6 +79,7 @@ public class BurstCrawler {
      * 
      */
     public void populateImageData() {
+        LOGGER.debug("Request to populate image data for all images in this crawler instance");
         this.populateImageData(this.images);
     }
 
@@ -93,6 +94,8 @@ public class BurstCrawler {
         }
 
         for (BurstImage image : images) {
+            LOGGER.debug("Populating image data for url: {}", image.homeUrl);
+            
             Document doc = this.getHtmlDoc(image.homeUrl);
             if (doc == null) {
                 continue;

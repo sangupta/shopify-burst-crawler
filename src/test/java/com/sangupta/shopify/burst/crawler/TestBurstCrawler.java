@@ -1,7 +1,6 @@
 package com.sangupta.shopify.burst.crawler;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,11 +16,10 @@ public class TestBurstCrawler {
         crawler.setHttpService(new DefaultHttpServiceImpl());
         
         // crawl just one page
-        crawler.crawl(1);
-        Assert.assertTrue(crawler.getLastPage() > 100);
+        BurstCrawledImages images = crawler.crawl();
+        Assert.assertTrue(images.getLastPage() > 100);
         
         // find images
-        List<BurstImage> images = crawler.getImages();
         Assert.assertNotNull(images);
         Assert.assertTrue(images.size() > 0);
         

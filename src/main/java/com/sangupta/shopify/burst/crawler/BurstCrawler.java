@@ -21,7 +21,6 @@
 
 package com.sangupta.shopify.burst.crawler;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
@@ -61,47 +60,37 @@ public class BurstCrawler {
     private HttpService httpService;
 
     /**
-     * Holds index to last page
-     */
-    private int lastPage;
-
-    /**
-     * Holds a list of all crawled image details
-     */
-    private final List<BurstImage> images = new ArrayList<>();
-
-    /**
-     * Crawl the entire site.
+     * Crawl the entire site for all pages on the site.
      * 
+     * @return a list of {@link BurstImage} discovered from crawling
      */
-    public void crawl() {
-        this.crawl(-1);
+    public BurstCrawledImages crawl() {        
+        return this.crawl(new BurstCrawlerOptions());
     }
     
-    public void crawl(int maxPages) {
+    public BurstCrawledImages crawl(BurstCrawlerOptions options) {
+        BurstCrawledImages images = new BurstCrawledImages();
+        
         int currentPage = 1;
         do {
-            doForPage(currentPage);
+            doForPage(images, options, currentPage);
             
-            if(currentPage == maxPages) {
+            if(images.size() == options.maxImages) {
+                LOGGER.debug("Max images reached, breaking from crawling more images");
+                break;
+            }
+            
+            if(currentPage == options.maxImages) {
                 LOGGER.debug("Max pages reached, breaking from crawling more images");
                 break;
             }
 
             currentPage++;
-        } while (currentPage < this.lastPage);
+        } while (currentPage < images.lastPage);
         
-        LOGGER.debug("Total number of images crawled: {}", this.images.size());
-    }
-
-    /**
-     * Populate details of all images that were just crawled by
-     * this instance of the client.
-     * 
-     */
-    public void populateImageData() {
-        LOGGER.debug("Request to populate image data for all images in this crawler instance");
-        this.populateImageData(this.images);
+        LOGGER.debug("Total number of images crawled: {}", images.size());
+        
+        return images;
     }
 
     /**
@@ -177,10 +166,12 @@ public class BurstCrawler {
 
     /**
      * Run crawler & parser over the given page index.
+     * @param images 
+     * @param options 
      * 
      * @param page
      */
-    private void doForPage(int page) {
+    private void doForPage(BurstCrawledImages images, BurstCrawlerOptions options, int page) {
         LOGGER.debug("Crawling page: {}", page);
         String url = BASE_URL;
         if (page > 1) {
@@ -193,18 +184,20 @@ public class BurstCrawler {
         }
 
         if (page == 1) {
-            extractLastPage(doc);
+            extractLastPage(images, doc);
         }
 
-        getPhotosFromPage(doc);
+        getPhotosFromPage(images, options, doc);
     }
 
     /**
      * Get basic info on photos from the given page document
+     * @param images 
+     * @param options 
      * 
      * @param doc
      */
-    private void getPhotosFromPage(Document doc) {
+    private void getPhotosFromPage(BurstCrawledImages images, BurstCrawlerOptions options, Document doc) {
         // clear up noise
         Element mainNode = getMainNode(doc);
         if(mainNode == null) {
@@ -229,7 +222,11 @@ public class BurstCrawler {
             BurstImage image = new BurstImage();
             image.homeUrl = url;
 
-            this.images.add(image);
+            images.add(image);
+            
+            if(images.size() == options.maxImages) {
+                break;
+            }
         }
     }
 
@@ -254,7 +251,7 @@ public class BurstCrawler {
      * 
      * @param doc
      */
-    private void extractLastPage(Document doc) {
+    private void extractLastPage(BurstCrawledImages images, Document doc) {
         LOGGER.debug("Extracting last page from HTML");
 
         // get last page URL so that we can run a loop
@@ -267,7 +264,7 @@ public class BurstCrawler {
                 int pageNum = StringUtils.getIntValue(num, -1);
                 if (pageNum > 0) {
                     LOGGER.info("Last page detected as: {}", pageNum);
-                    this.lastPage = pageNum;
+                    images.lastPage = pageNum;
                 }
             }
         }
@@ -305,14 +302,11 @@ public class BurstCrawler {
     
     // Usual accessors follow
 
-    public List<BurstImage> getImages() {
-        return this.images;
-    }
-    
-    public int getLastPage() {
-        return this.lastPage;
-    }
-    
+    /**
+     * Allow to set the {@link HttpService} to be used.
+     * 
+     * @param httpService
+     */
     public void setHttpService(HttpService httpService) {
         this.httpService = httpService;
     }

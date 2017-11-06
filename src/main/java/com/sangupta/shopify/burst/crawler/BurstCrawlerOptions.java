@@ -49,6 +49,16 @@ public class BurstCrawlerOptions {
      */
     public int maxImages = -1;
     
+    /**
+     * Time delay between fetching different pages
+     */
+    public int delayBetweenPagesMillis = 1000;
+    
+    /**
+     * Time delay between fetching image pages
+     */
+    public int delayBetweenImagesMillis = 1000;
+    
     public BurstCrawlerOptions setMaxPages(int pages) {
         this.maxPages = pages;
         return this;
@@ -66,6 +76,16 @@ public class BurstCrawlerOptions {
     
     public BurstCrawlerOptions setMaxImages(int images) {
         this.maxImages = images;
+        return this;
+    }
+    
+    public BurstCrawlerOptions setDelayBetweenPagesMillis(int delay) {
+        this.delayBetweenPagesMillis = delay;
+        return this;
+    }
+    
+    public BurstCrawlerOptions setDelayBetweenImagesMillis(int delay) {
+        this.delayBetweenImagesMillis = delay;
         return this;
     }
     

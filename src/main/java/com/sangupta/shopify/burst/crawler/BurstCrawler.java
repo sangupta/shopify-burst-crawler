@@ -55,20 +55,42 @@ public class BurstCrawler {
     private static final String BASE_URL = "https://burst.shopify.com/photos";
 
     /**
+     * Options to use
+     */
+    private final BurstCrawlerOptions options;
+
+    /**
      * The HTTP service to use
      */
     private HttpService httpService;
-
+    
+    /**
+     * Create {@link BurstCrawler} instance with default {@link BurstCrawlerOptions}.
+     * 
+     */
+    public BurstCrawler() {
+        this(new BurstCrawlerOptions());
+    }
+    
+    /**
+     * Create {@link BurstCrawler} instance with given {@link BurstCrawlerOptions}.
+     * 
+     * @param options
+     */
+    public BurstCrawler(BurstCrawlerOptions options) {
+        if(options == null) {
+            throw new IllegalArgumentException("BurstCrawlerOptions cannot be null");
+        }
+        
+        this.options = options;
+    }
+    
     /**
      * Crawl the entire site for all pages on the site.
      * 
      * @return a list of {@link BurstImage} discovered from crawling
      */
     public BurstCrawledImages crawl() {        
-        return this.crawl(new BurstCrawlerOptions());
-    }
-    
-    public BurstCrawledImages crawl(BurstCrawlerOptions options) {
         BurstCrawledImages images = new BurstCrawledImages();
         
         int currentPage = options.startPage;
@@ -90,6 +112,10 @@ public class BurstCrawler {
                 LOGGER.debug("Last page limit reached, breaking from crawling more images");
                 break;
             }
+            
+            if(options.delayBetweenPagesMillis > 0) {
+                sleepQuietly(options.delayBetweenPagesMillis);
+            }
 
             currentPage++;
             crawled++;
@@ -98,6 +124,23 @@ public class BurstCrawler {
         LOGGER.debug("Total number of images crawled: {}", images.size());
         
         return images;
+    }
+
+    /**
+     * Make this thread sleep for a while.
+     * 
+     * @param delay
+     */
+    private void sleepQuietly(int delay) {
+        if(delay <= 0) {
+            return;
+        }
+        
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            // eat up
+        }
     }
 
     /**
@@ -122,6 +165,8 @@ public class BurstCrawler {
             }
 
             this.populateImageDetails(image, doc);
+            
+            this.sleepQuietly(this.options.delayBetweenImagesMillis);
         }
     }
 

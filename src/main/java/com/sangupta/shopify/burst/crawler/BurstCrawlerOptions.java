@@ -49,4 +49,24 @@ public class BurstCrawlerOptions {
      */
     public int maxImages = -1;
     
+    public BurstCrawlerOptions setMaxPages(int pages) {
+        this.maxPages = pages;
+        return this;
+    }
+
+    public BurstCrawlerOptions setStartPage(int page) {
+        this.startPage = page;
+        return this;
+    }
+    
+    public BurstCrawlerOptions setEndPage(int page) {
+        this.endPage = page;
+        return this;
+    }
+    
+    public BurstCrawlerOptions setMaxImages(int images) {
+        this.maxImages = images;
+        return this;
+    }
+    
 }

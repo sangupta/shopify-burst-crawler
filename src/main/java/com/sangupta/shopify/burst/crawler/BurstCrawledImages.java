@@ -26,7 +26,7 @@ import java.util.List;
 
 public class BurstCrawledImages {
 
-    final List<BurstImage> images = new ArrayList<>();
+    public final List<BurstImage> images = new ArrayList<>();
     
     int lastPage;
     

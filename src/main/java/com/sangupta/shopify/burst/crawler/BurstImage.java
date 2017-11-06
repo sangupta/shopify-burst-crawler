@@ -50,11 +50,11 @@ public class BurstImage {
 
     @Override
     public int hashCode() {
-        if(this.url == null) {
+        if(this.homeUrl == null) {
             return 0;
         }
         
-        return this.url.hashCode();
+        return this.homeUrl.hashCode();
     }
     
     @Override
@@ -67,17 +67,17 @@ public class BurstImage {
             return true;
         }
         
-        if(this.url == null) {
+        if(this.homeUrl == null) {
             return false;
         }
         
         if(obj instanceof BurstImage) {
             BurstImage other = (BurstImage) obj;
-            return this.url.equals(other.url);
+            return this.homeUrl.equals(other.homeUrl);
         }
         
         if(obj instanceof String) {
-            return this.url.equals((String) obj);
+            return this.homeUrl.equals((String) obj);
         }
 
         return false;
@@ -85,7 +85,7 @@ public class BurstImage {
 
     @Override
     public String toString() {
-        return "[BurstImage: " + this.url + "]";
+        return "[BurstImage: " + this.homeUrl + "]";
     }
     
 }

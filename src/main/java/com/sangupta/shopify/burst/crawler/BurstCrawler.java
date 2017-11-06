@@ -71,7 +71,8 @@ public class BurstCrawler {
     public BurstCrawledImages crawl(BurstCrawlerOptions options) {
         BurstCrawledImages images = new BurstCrawledImages();
         
-        int currentPage = 1;
+        int currentPage = options.startPage;
+        int crawled = 1;
         do {
             doForPage(images, options, currentPage);
             
@@ -80,12 +81,18 @@ public class BurstCrawler {
                 break;
             }
             
-            if(currentPage == options.maxPages) {
+            if(crawled == options.maxPages) {
                 LOGGER.debug("Max pages reached, breaking from crawling more images");
+                break;
+            }
+            
+            if(currentPage == options.endPage) {
+                LOGGER.debug("Last page limit reached, breaking from crawling more images");
                 break;
             }
 
             currentPage++;
+            crawled++;
         } while (currentPage < images.lastPage);
         
         LOGGER.debug("Total number of images crawled: {}", images.size());
@@ -178,7 +185,7 @@ public class BurstCrawler {
             url = url + "?page=" + page;
         }
 
-        Document doc = this.getHtmlDoc(BASE_URL);
+        Document doc = this.getHtmlDoc(url);
         if (doc == null) {
             return;
         }
@@ -292,6 +299,7 @@ public class BurstCrawler {
      * @return
      */
     private String getHtml(String url) {
+        LOGGER.debug("Fetching HTML response from URL: {}", url);
         WebResponse response = this.httpService.getResponse(url);
         if (response == null || !response.isSuccess()) {
             return null;

@@ -80,7 +80,7 @@ public class BurstCrawler {
                 break;
             }
             
-            if(currentPage == options.maxImages) {
+            if(currentPage == options.maxPages) {
                 LOGGER.debug("Max pages reached, breaking from crawling more images");
                 break;
             }

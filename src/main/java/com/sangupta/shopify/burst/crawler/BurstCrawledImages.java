@@ -1,7 +1,7 @@
 /**
  *
  * shopify-burst-crawler: Java Client for burst.shopify.com API
- * Copyright (c) 2017, Sandeep Gupta
+ * Copyright (c) 2017-2019, Sandeep Gupta
  * 
  * https://sangupta.com/projects/shopify-burst-crawler
  *  

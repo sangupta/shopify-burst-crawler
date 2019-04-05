@@ -1,7 +1,7 @@
 /**
  *
  * shopify-burst-crawler: Java Client for burst.shopify.com API
- * Copyright (c) 2017, Sandeep Gupta
+ * Copyright (c) 2017-2019, Sandeep Gupta
  * 
  * https://sangupta.com/projects/shopify-burst-crawler
  *  
@@ -32,20 +32,49 @@ import java.util.List;
  */
 public class BurstImage {
 
+	/**
+	 * The original full-size image URL
+	 */
     public String url;
 
+    /**
+     * URL to the website where this photo is hosted
+     */
     public String homeUrl;
 
+    /**
+     * The name of the photo
+     */
     public String title;
 
+    /**
+     * Description of this image
+     */
     public String description;
 
+    /**
+     * Name of the author for this image
+     */
     public String author;
 
+    /**
+     * URL to the author on burst website
+     */
     public String authorUrl;
 
+    /**
+     * License name
+     */
     public String license;
+    
+    /**
+     * URL to the license attached to this photo
+     */
+    public String licenseUrl;
 
+    /**
+     * Tags associated with this photo
+     */
     public final List<String> tags = new ArrayList<>();
 
     @Override

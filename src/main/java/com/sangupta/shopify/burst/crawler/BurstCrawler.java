@@ -23,6 +23,8 @@ package com.sangupta.shopify.burst.crawler;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -62,6 +64,7 @@ public class BurstCrawler {
     /**
      * The HTTP service to use
      */
+    @Inject
     private HttpService httpService;
     
     /**

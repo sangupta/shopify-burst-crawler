@@ -12,7 +12,7 @@ public class TestBurstCrawler {
     @Test
     public void testCrawler() {
         // declare crawler
-        BurstCrawler crawler = new BurstCrawler();
+        BurstCrawler crawler = new BurstCrawler(new BurstCrawlerOptions().setMaxPages(1).setMaxImages(1));
         crawler.setHttpService(new DefaultHttpServiceImpl());
         
         // crawl just one page

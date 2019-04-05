@@ -23,8 +23,6 @@ package com.sangupta.shopify.burst.crawler;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -32,8 +30,11 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sangupta.jerry.consume.GenericConsumer;
 import com.sangupta.jerry.http.WebResponse;
 import com.sangupta.jerry.http.service.HttpService;
+import com.sangupta.jerry.http.service.impl.DefaultHttpServiceImpl;
+import com.sangupta.jerry.io.AdvancedStringReader;
 import com.sangupta.jerry.util.AssertUtils;
 import com.sangupta.jerry.util.StringUtils;
 
@@ -44,7 +45,7 @@ import com.sangupta.jerry.util.StringUtils;
  * @author sangupta
  *
  */
-public class BurstCrawler {
+public class BurstCrawler extends AbstractBurstCrawler {
 
     /**
      * My private logger
@@ -54,18 +55,24 @@ public class BurstCrawler {
     /**
      * Base URL to site
      */
-    private static final String BASE_URL = "https://burst.shopify.com/photos";
+    private static final String BASE_URL = "https://burst.shopify.com/photos?sort=latest";
 
     /**
-     * Options to use
+     * Last page as detected
      */
-    private final BurstCrawlerOptions options;
-
+    private int lastPage = 0;
+    
     /**
-     * The HTTP service to use
+     * Total images collected till now
      */
-    @Inject
-    private HttpService httpService;
+    private int totalCollected = 0;
+    
+    
+    public static void main(String[] args) {
+    	BurstCrawler impl = new BurstCrawler();
+    	impl.httpService = new DefaultHttpServiceImpl();
+    	impl.crawl();
+	}
     
     /**
      * Create {@link BurstCrawler} instance with default {@link BurstCrawlerOptions}.
@@ -81,25 +88,19 @@ public class BurstCrawler {
      * @param options
      */
     public BurstCrawler(BurstCrawlerOptions options) {
-        if(options == null) {
-            throw new IllegalArgumentException("BurstCrawlerOptions cannot be null");
-        }
-        
-        this.options = options;
+    	super(options);
+
+    	this.lastPage = 0;
+        this.totalCollected = 0;
     }
     
-    /**
-     * Crawl the entire site for all pages on the site.
-     * 
-     * @return a list of {@link BurstImage} discovered from crawling
-     */
-    public BurstCrawledImages crawl() {        
+    public void crawl(GenericConsumer<BurstImage> collector) {        
         BurstCrawledImages images = new BurstCrawledImages();
         
-        int currentPage = options.startPage;
+        int currentPage = this.options.startPage;
         int crawled = 1;
         do {
-            doForPage(images, options, currentPage);
+            doForPage(collector, currentPage);
             
             if(images.size() == options.maxImages) {
                 LOGGER.debug("Max images reached, breaking from crawling more images");
@@ -122,11 +123,9 @@ public class BurstCrawler {
 
             currentPage++;
             crawled++;
-        } while (currentPage < images.lastPage);
+        } while (currentPage < this.lastPage);
         
         LOGGER.debug("Total number of images crawled: {}", images.size());
-        
-        return images;
     }
 
     /**
@@ -226,11 +225,11 @@ public class BurstCrawler {
      * 
      * @param page
      */
-    private void doForPage(BurstCrawledImages images, BurstCrawlerOptions options, int page) {
+    private void doForPage(GenericConsumer<BurstImage> collector, int page) {
         LOGGER.debug("Crawling page: {}", page);
         String url = BASE_URL;
         if (page > 1) {
-            url = url + "?page=" + page;
+            url = url + "&page=" + page;
         }
 
         Document doc = this.getHtmlDoc(url);
@@ -239,20 +238,20 @@ public class BurstCrawler {
         }
 
         if (page == 1) {
-            extractLastPage(images, doc);
+            extractLastPage(doc);
         }
 
-        getPhotosFromPage(images, options, doc);
+        getPhotosFromPage(collector, options, doc);
     }
 
     /**
      * Get basic info on photos from the given page document
-     * @param images 
+     * @param collector 
      * @param options 
      * 
      * @param doc
      */
-    private void getPhotosFromPage(BurstCrawledImages images, BurstCrawlerOptions options, Document doc) {
+    private void getPhotosFromPage(GenericConsumer<BurstImage> collector, BurstCrawlerOptions options, Document doc) {
         // clear up noise
         Element mainNode = getMainNode(doc);
         if(mainNode == null) {
@@ -274,13 +273,16 @@ public class BurstCrawler {
                 continue;
             }
 
-            BurstImage image = new BurstImage();
-            image.homeUrl = url;
+            final BurstImage image = this.getBurstImageFromURL(url);
+            this.totalCollected++;
 
-            images.add(image);
+            boolean continueCrawling = collector.consume(image);
+            if(!continueCrawling) {
+            	return;
+            }
             
-            if(images.size() == options.maxImages) {
-                break;
+            if(this.totalCollected == options.maxImages) {
+                return;
             }
         }
     }
@@ -306,22 +308,23 @@ public class BurstCrawler {
      * 
      * @param doc
      */
-    private void extractLastPage(BurstCrawledImages images, Document doc) {
+    private void extractLastPage(Document doc) {
         LOGGER.debug("Extracting last page from HTML");
 
         // get last page URL so that we can run a loop
         Elements elements = doc.select("span.last a");
-        if (elements != null) {
-            String href = elements.first().absUrl("href");
-            int index = href.indexOf('=');
-            if (index > 0) {
-                String num = href.substring(index + 1);
-                int pageNum = StringUtils.getIntValue(num, -1);
-                if (pageNum > 0) {
-                    LOGGER.info("Last page detected as: {}", pageNum);
-                    images.lastPage = pageNum;
-                }
-            }
+        if (elements == null || elements.isEmpty()) { 
+        	return;
+        }
+        
+        String href = elements.first().absUrl("href");
+        AdvancedStringReader reader = new AdvancedStringReader(href);
+        
+        String num = reader.readBetween("page=", "&");
+        int pageNum = StringUtils.getIntValue(num, -1);
+        if (pageNum > 0) {
+            LOGGER.info("Last page detected as: {}", pageNum);
+            this.lastPage = pageNum;
         }
     }
 

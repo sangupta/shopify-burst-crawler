@@ -22,7 +22,7 @@
 package com.sangupta.shopify.burst.crawler;
 
 /**
- * Options that need to be used for {@link BurstCrawler}.
+ * Options that can to be used for {@link BurstCrawler}.
  * 
  * @author sangupta
  *
@@ -58,6 +58,11 @@ public class BurstCrawlerOptions {
      * Time delay between fetching image pages
      */
     public int delayBetweenImagesMillis = 1000;
+    
+    /**
+     * Indicates if we need to populate each detail of each image
+     */
+    public boolean populateDetails = true;
     
     public BurstCrawlerOptions setMaxPages(int pages) {
         this.maxPages = pages;

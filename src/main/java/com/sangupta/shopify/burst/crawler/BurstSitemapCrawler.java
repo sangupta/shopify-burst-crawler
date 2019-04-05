@@ -34,6 +34,14 @@ import com.sangupta.jerry.consume.GenericConsumer;
 import com.sangupta.jerry.io.AdvancedStringReader;
 import com.sangupta.jerry.util.AssertUtils;
 
+/**
+ * Simple CLI tool to crawl Shopify Burst image site and provide a list of all
+ * images and their details. This crawler uses the website's sitemap file and
+ * traverses each image from there.
+ * 
+ * @author sangupta
+ *
+ */
 public class BurstSitemapCrawler extends AbstractBurstCrawler {
 
 	/**
@@ -45,11 +53,21 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	 * The main sitemap file as reported by robots.txt
 	 */
 	private static final String MAIN_SITEMAP_FILE = "https://burst.shopify.com/sitemap.xml";
-	
+
+	/**
+	 * Construct an instance of {@link BurstSitemapCrawler} using default
+	 * {@link BurstCrawlerOptions}
+	 */
 	public BurstSitemapCrawler() {
 		this(new BurstCrawlerOptions());
 	}
-	
+
+	/**
+	 * Construct an instance of {@link BurstSitemapCrawler} using provided
+	 * {@link BurstCrawlerOptions}
+	 * 
+	 * @param options the {@link BurstCrawlerOptions} to use
+	 */
 	public BurstSitemapCrawler(BurstCrawlerOptions options) {
 		super(options);
 	}

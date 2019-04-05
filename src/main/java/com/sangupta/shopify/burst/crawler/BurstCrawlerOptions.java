@@ -58,7 +58,7 @@ public class BurstCrawlerOptions {
      * Time delay between fetching image pages
      */
     public int delayBetweenImagesMillis = 1000;
-    
+        
     /**
      * Indicates if we need to populate each detail of each image
      */

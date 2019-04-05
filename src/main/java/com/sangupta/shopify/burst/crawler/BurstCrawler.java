@@ -39,7 +39,8 @@ import com.sangupta.jerry.util.StringUtils;
 
 /**
  * Simple CLI tool to crawl Shopify Burst image site and provide a list of all
- * images and their details.
+ * images and their details. This crawler uses the latest photos page to crawl
+ * in from there.
  * 
  * @author sangupta
  *

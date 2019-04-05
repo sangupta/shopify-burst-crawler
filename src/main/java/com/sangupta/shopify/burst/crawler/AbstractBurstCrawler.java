@@ -39,6 +39,13 @@ import com.sangupta.jerry.io.AdvancedStringReader;
 import com.sangupta.jerry.util.AssertUtils;
 import com.sangupta.jerry.util.GsonUtils;
 
+/**
+ * Abstract crawler implementation for Shopify Burst. Provides common code
+ * for different implementations.
+ * 
+ * @author sangupta
+ *
+ */
 public abstract class AbstractBurstCrawler {
 
 	/**

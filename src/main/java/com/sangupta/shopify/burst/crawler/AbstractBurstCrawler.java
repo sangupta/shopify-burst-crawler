@@ -40,33 +40,44 @@ import com.sangupta.jerry.util.AssertUtils;
 import com.sangupta.jerry.util.GsonUtils;
 
 public abstract class AbstractBurstCrawler {
-	
-	/**
-     * My private logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBurstCrawler.class);
 
 	/**
-     * The HTTP service to use
-     */
-    @Inject
-    protected HttpService httpService;
+	 * My private logger
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBurstCrawler.class);
 
-    /**
-     * Options to use
-     */
-    protected final BurstCrawlerOptions options;
-    
-    public AbstractBurstCrawler(BurstCrawlerOptions options) {
-        if(options == null) {
-            throw new IllegalArgumentException("BurstCrawlerOptions cannot be null");
-        }
-        
-    	this.options = options;
-    }
+	/**
+	 * The HTTP service to use
+	 */
+	@Inject
+	protected HttpService httpService;
 
+	/**
+	 * Options to use
+	 */
+	protected final BurstCrawlerOptions options;
+
+	/**
+	 * Construct an instance using the provided {@link BurstCrawlerOptions}.
+	 * 
+	 * @param options {@link BurstCrawlerOptions} to use.
+	 */
+	public AbstractBurstCrawler(BurstCrawlerOptions options) {
+		if (options == null) {
+			throw new IllegalArgumentException("BurstCrawlerOptions cannot be null");
+		}
+
+		this.options = options;
+	}
+
+	/**
+	 * The abstract crawling method that all implementations need to provide for a
+	 * way to collect streaming results.
+	 * 
+	 * @param collector the {@link GenericConsumer} based collector
+	 */
 	public abstract void crawl(GenericConsumer<BurstImage> collector);
-	
+
 	/**
 	 * Return a list of all crawled {@link BurstImage}s. This may take a lot of time
 	 * as all URLs reachable via the sitemap or the photos page shall be crawled
@@ -118,8 +129,8 @@ public abstract class AbstractBurstCrawler {
 		final BurstImage image = new BurstImage();
 		// copy base values
 		image.homeUrl = url;
-		
-		if(!this.options.populateDetails) {
+
+		if (!this.options.populateDetails) {
 			return image;
 		}
 
@@ -151,10 +162,10 @@ public abstract class AbstractBurstCrawler {
 	 */
 	protected void populateFromHTML(BurstImage image, String html) {
 		final Document doc = Jsoup.parse(html);
-		if(doc == null) {
+		if (doc == null) {
 			return;
 		}
-		
+
 		Elements elements = doc.select("main");
 		if (elements == null) {
 			return;
@@ -192,5 +203,5 @@ public abstract class AbstractBurstCrawler {
 			}
 		}
 	}
-	
+
 }

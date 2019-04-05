@@ -31,10 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sangupta.jerry.consume.GenericConsumer;
-import com.sangupta.jerry.http.service.impl.DefaultHttpServiceImpl;
 import com.sangupta.jerry.io.AdvancedStringReader;
 import com.sangupta.jerry.util.AssertUtils;
-import com.sangupta.jerry.util.DateUtils;
 
 public class BurstSitemapCrawler extends AbstractBurstCrawler {
 
@@ -54,15 +52,6 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	
 	public BurstSitemapCrawler(BurstCrawlerOptions options) {
 		super(options);
-	}
-
-	public static void main(String[] args) {
-		BurstSitemapCrawler impl = new BurstSitemapCrawler();
-
-		impl.httpService = new DefaultHttpServiceImpl();
-		impl.httpService.setSocketTimeout((int) DateUtils.FIVE_MINUTES);
-
-		impl.getBurstImageFromURL("https://burst.shopify.com/photos/pouring-hot-coffee");
 	}
 
 	/**

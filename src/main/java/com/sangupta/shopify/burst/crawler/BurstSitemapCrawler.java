@@ -29,6 +29,10 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +59,7 @@ public class BurstSitemapCrawler {
 		impl.httpService = new DefaultHttpServiceImpl();
 		impl.httpService.setSocketTimeout((int) DateUtils.FIVE_MINUTES);
 		
-		impl.crawl();
+		impl.getCrawledImageFromPage("https://burst.shopify.com/photos/pouring-hot-coffee");
 	}
 
 	/**
@@ -192,6 +196,8 @@ public class BurstSitemapCrawler {
 		image.homeUrl = url;
 		
 		// parse and extract data
+		final Document doc = Jsoup.parse(html);
+		this.populateFromHTML(image, doc);
 		
 		// read name, description from json+ld
 		reader.reset();
@@ -203,11 +209,49 @@ public class BurstSitemapCrawler {
 			image.title = data.name;
 			image.description = data.description;
 			image.author = data.author;
-			image.license = data.license;
-			
+			image.licenseUrl = data.license;
 		}
 		
 		return image;
+	}
+	
+	private void populateFromHTML(BurstImage image, Document doc) {
+		Elements elements = doc.select("main");
+        if (elements == null) {
+            return;
+        }
+        
+		Element mainNode = elements.first();
+        if(mainNode == null) {
+            return;
+        }
+        
+		elements = mainNode.select(".photo__meta a");
+        if(elements != null && elements.size() > 0) {
+            for(int index = 0; index < elements.size(); index++) {
+                Element ele = elements.get(index);
+                String href = ele.absUrl("href");
+                if(AssertUtils.isEmpty(href)) {
+                	href = ele.attr("href");
+                }
+                
+        		// populate author url
+                if(href.startsWith("https://burst.shopify.com/@")) {
+                    image.authorUrl = href;
+                    image.author = ele.text();
+                    continue;
+                }
+                
+        		// populate license and license url
+                if(href.contains("/licenses/")) {
+                    image.license = ele.text();
+                    continue;
+                }
+
+                // populate tags
+                image.tags.add(ele.text());
+            }
+        }		
 	}
 
 	/**

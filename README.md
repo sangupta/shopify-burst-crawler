@@ -102,7 +102,7 @@ For more information on SemVer, please visit http://semver.org/.
 	
 ```
 shopify-burst-crawler
-Copyright (c) 2017, Sandeep Gupta
+Copyright (c) 2017-2019, Sandeep Gupta
 
 https://sangupta.com/projects/shopify-burst-crawler
 

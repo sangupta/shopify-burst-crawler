@@ -95,14 +95,12 @@ public class BurstCrawler extends AbstractBurstCrawler {
     }
     
     public void crawl(GenericConsumer<BurstImage> collector) {        
-        BurstCrawledImages images = new BurstCrawledImages();
-        
         int currentPage = this.options.startPage;
         int crawled = 1;
         do {
             doForPage(collector, currentPage);
             
-            if(images.size() == options.maxImages) {
+            if(this.totalCollected == options.maxImages) {
                 LOGGER.debug("Max images reached, breaking from crawling more images");
                 break;
             }
@@ -125,7 +123,7 @@ public class BurstCrawler extends AbstractBurstCrawler {
             crawled++;
         } while (currentPage < this.lastPage);
         
-        LOGGER.debug("Total number of images crawled: {}", images.size());
+        LOGGER.debug("Total number of images crawled: {}", this.totalCollected);
     }
 
     /**

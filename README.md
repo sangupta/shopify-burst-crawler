@@ -1,61 +1,39 @@
 # shopify-burst-crawler
 
-Simple crawler to download meta information for all stock pics from Shopify Burst 
-website: https://burst.shopify.com.
+Simple crawlers to download meta information for all stock photos from Shopify Burst 
+website: https://burst.shopify.com. There are 2 crawling modes supported:
+
+* BurstCrawler - starts crawling using the latest photos URL
+* BurstSitemapCrawler - starts crawling using the sitemap URL
 
 ## Usage
 
-The `junit` test case below depicts on how the crawler can be used within another
-application:
+Both crawlers support same API:
 
 ```java
-@Test
-public void testCrawler() {
-    // declare crawler
-    BurstCrawler crawler = new BurstCrawler();
-    
-    // wire the HttpService to use
-    crawler.setHttpService(new DefaultHttpServiceImpl());
-    
-    // crawl just one page
-    // pass a value of zero or negative to crawl all pages available
-    crawler.crawl(1);
+BurstCrawler crawler = new BurstCrawler();
 
-    // or you may use the following method to crawl all images
-    // by scanning and moving across pages
-    crawler.crawl();
+// or you could use the Sitemap crawler
+crawler = new BurstSitemapCrawler();
 
-    Assert.assertTrue(crawler.getLastPage() > 100);
-    
-    // find images that were crawled
-    List<BurstImage> images = crawler.getImages();
-    Assert.assertNotNull(images);
-    Assert.assertTrue(images.size() > 0);
-    
-    // get image details for just one image
-    BurstImage image = images.get(0);
+// this will crawl and return the entire bunch of results
+// it is slow and may take a lot of time
+List<BurstImage> images = crawler.crawl();
 
-    // this takes in a list of all images that need to be
-    // prepopulated metadata for given images
-    // this method is not dependent on the crawler.crawl() method
-    // and thus can be used independently
-    crawler.populateImageData(Arrays.asList(new BurstImage[] { image }));
+// a streaming version if also available
+GenericConsumer<BurstImage> collector = new GenericConsumer<BurstImage>() {
 
-    // you may also use the following method to populate
-    // metadata for all images that were just crawled by this
-    // crawler instance
-    crawler.populateImageData();
-    
-    Assert.assertNotNull(image.author);
-    Assert.assertNotNull(image.authorUrl);
-    Assert.assertNotNull(image.description);
-    Assert.assertNotNull(image.homeUrl);
-    Assert.assertNotNull(image.license);
-    Assert.assertNotNull(image.title);
-    Assert.assertNotNull(image.url);
-    Assert.assertNotNull(image.tags);
-    Assert.assertTrue(image.tags.size() > 0);        
-}
+	@Override
+	public boolean consume(BurstImage image) {
+		// do something with the image
+		// ...
+		
+		// return a true if you want to continue crawling
+		// or return, a false to stop the crawling
+		return true;
+	}
+};
+crawler.crawl(collector);
 ```
 
 ## Downloads
@@ -77,7 +55,7 @@ Then add the dependency as,
 <dependency>
     <groupId>com.github.sangupta</groupId>
     <artifactId>shopify-burst-crawler</artifactId>
-    <version>-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

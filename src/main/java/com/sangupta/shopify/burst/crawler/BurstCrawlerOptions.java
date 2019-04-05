@@ -21,6 +21,9 @@
 
 package com.sangupta.shopify.burst.crawler;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Options that can to be used for {@link BurstCrawler}.
  * 
@@ -63,6 +66,13 @@ public class BurstCrawlerOptions {
      * Indicates if we need to populate each detail of each image
      */
     public boolean populateDetails = true;
+    
+    /**
+     * URL {@link Set} of previously crawled images. It can be used
+     * to prevent crawling of these again. Any URL added here will
+     * not be reported in the resulting set.
+     */
+    public final Set<String> previouslyCrawled = new HashSet<>();
     
     public BurstCrawlerOptions setMaxPages(int pages) {
         this.maxPages = pages;

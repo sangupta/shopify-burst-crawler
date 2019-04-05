@@ -153,8 +153,7 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 				if (crawledImage != null) {
 					boolean continueCrawling = collector.consume(crawledImage);
 					if (!continueCrawling) {
-						LOGGER.debug("Collector returned false after collecting image: {}. Further collection stopped.",
-								url);
+						LOGGER.debug("Collector returned false after collecting image: {}. Further collection stopped.", url);
 						return;
 					}
 				}

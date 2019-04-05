@@ -271,15 +271,22 @@ public class BurstCrawler extends AbstractBurstCrawler {
 			if (AssertUtils.isEmpty(url)) {
 				continue;
 			}
-
+			
 			final BurstImage image = this.getBurstImageFromURL(url);
+			if(image == null) {
+				continue;
+			}
+			
+			// add that we have collected one more
 			this.totalCollected++;
 
+			// consume with collector
 			boolean continueCrawling = collector.consume(image);
 			if (!continueCrawling) {
 				return;
 			}
 
+			// check max images?
 			if (this.totalCollected == options.maxImages) {
 				return;
 			}

@@ -123,6 +123,11 @@ public abstract class AbstractBurstCrawler {
 	 * @return the {@link CrawledImage} instance
 	 */
 	protected BurstImage getBurstImageFromURL(String url) {
+		if(this.options.previouslyCrawled.contains(url)) {
+			LOGGER.debug("URL present in previously visited set, skipping: {}", url);
+			return null;
+		}
+
 		LOGGER.debug("Downloading Shopify photo page: {}", url);
 
 		// download the HTML for image page

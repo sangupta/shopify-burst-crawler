@@ -55,6 +55,12 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	private static final String MAIN_SITEMAP_FILE = "https://burst.shopify.com/sitemap.xml";
 
 	/**
+	 * Time last image was crawled - used to leave time gaps between
+	 * each fetch
+	 */
+	private volatile long lastCrawled = 0;
+
+	/**
 	 * Construct an instance of {@link BurstSitemapCrawler} using default
 	 * {@link BurstCrawlerOptions}
 	 */
@@ -79,6 +85,8 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	 * @param collector the {@link GenericConsumer} to use
 	 */
 	public void crawl(GenericConsumer<BurstImage> collector) {
+		LOGGER.info("Starting to crawl Shopify Burst site");
+		
 		// read sitemap file
 		List<String> sitemaps = this.readMainSitemapFile();
 		if (AssertUtils.isEmpty(sitemaps)) {
@@ -87,12 +95,15 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 		}
 
 		// loop over
+		LOGGER.info("Total number of child sitemaps found: {}", sitemaps.size());
 		Set<String> visited = new HashSet<>();
 		Iterator<String> iterator = sitemaps.iterator();
 		while (iterator.hasNext()) {
 			String sitemap = iterator.next();
 			this.doForSitemap(sitemap, sitemaps, visited, collector);
 		}
+		
+		LOGGER.info("Shopify Burst site crawling completed");
 	}
 
 	/**
@@ -149,6 +160,21 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 
 			// check if its a photo
 			if (url.startsWith("https://burst.shopify.com/photos/")) {
+				LOGGER.debug("Found image url as: {}", url);
+				
+				// induce delay in crawling if desired
+				long elapsed = System.currentTimeMillis() - this.lastCrawled;
+				long remaining = this.options.delayBetweenImagesMillis - elapsed;
+				if(remaining > 0) {
+					try {
+						LOGGER.debug("Sleeping for {} millis between image fetches", remaining);
+						Thread.sleep(remaining);
+					} catch(InterruptedException e) {
+						// something wants to exit immediately
+						return;
+					}
+				}
+				
 				BurstImage crawledImage = this.getBurstImageFromURL(url);
 				if (crawledImage != null) {
 					boolean continueCrawling = collector.consume(crawledImage);
@@ -172,6 +198,7 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	 */
 	private List<String> readMainSitemapFile() {
 		LOGGER.debug("Downloading Shopify Burst main sitemap XML");
+		
 		String content = this.httpService.getTextResponse(MAIN_SITEMAP_FILE);
 		if (AssertUtils.isEmpty(content)) {
 			LOGGER.debug("No content for shopify burst main sitemap");
@@ -190,6 +217,7 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 				return maps;
 			}
 
+			LOGGER.debug("Discovered child sitemap as: {}", url);
 			maps.add(url);
 		} while (true);
 	}

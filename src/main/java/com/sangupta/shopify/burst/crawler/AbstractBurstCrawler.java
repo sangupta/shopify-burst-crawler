@@ -131,38 +131,50 @@ public abstract class AbstractBurstCrawler {
 		LOGGER.debug("Downloading Shopify photo page: {}", url);
 
 		// download the HTML for image page
-		String html = this.httpService.getTextResponse(url);
-		if (AssertUtils.isEmpty(html)) {
-			LOGGER.debug("Unable to download photo page url: {}", url);
-			return null;
-		}
-
-		// export image
-		final BurstImage image = new BurstImage();
-		// copy base values
-		image.homeUrl = url;
-
-		if (!this.options.populateDetails) {
+		try {
+			String html = this.httpService.getTextResponse(url);
+			if (AssertUtils.isEmpty(html)) {
+				LOGGER.debug("Unable to download photo page url: {}", url);
+				return null;
+			}
+	
+			// export image
+			final BurstImage image = new BurstImage();
+			// copy base values
+			image.homeUrl = url;
+	
+			if (!this.options.populateDetails) {
+				return image;
+			}
+	
+			// parse and extract data
+			this.populateFromHTML(image, html);
+	
+			// read name, description from json+ld
+			final AdvancedStringReader reader = new AdvancedStringReader(html);
+			final String jsonLinkedData = reader.readBetween("<script type=\"application/ld+json\">", "</script>");
+			if (AssertUtils.isNotEmpty(jsonLinkedData)) {
+				final BurstJsonLinkedData data = GsonUtils.getGson().fromJson(jsonLinkedData, BurstJsonLinkedData.class);
+				
+				String contentUrl = data.contentUrl;
+				int questionMark = contentUrl.indexOf('?');
+				if(questionMark > 0) {
+					contentUrl = contentUrl.substring(0, questionMark);
+				}
+	
+				image.url = contentUrl;
+				image.title = data.name;
+				image.description = data.description;
+				image.author = data.author;
+				image.licenseUrl = data.license;
+			}
+	
 			return image;
+		} catch(Exception e) {
+			LOGGER.error("Unable to extract image data from url: " + url, e);
 		}
-
-		// parse and extract data
-		this.populateFromHTML(image, html);
-
-		// read name, description from json+ld
-		final AdvancedStringReader reader = new AdvancedStringReader(html);
-		final String jsonLinkedData = reader.readBetween("<script type=\"application/ld+json\">", "</script>");
-		if (AssertUtils.isNotEmpty(jsonLinkedData)) {
-			final BurstJsonLinkedData data = GsonUtils.getGson().fromJson(jsonLinkedData, BurstJsonLinkedData.class);
-
-			image.url = data.contentUrl.substring(0, data.contentUrl.indexOf('?'));
-			image.title = data.name;
-			image.description = data.description;
-			image.author = data.author;
-			image.licenseUrl = data.license;
-		}
-
-		return image;
+		
+		return null;
 	}
 
 	/**

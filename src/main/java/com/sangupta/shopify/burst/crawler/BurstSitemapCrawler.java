@@ -59,6 +59,11 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	 * each fetch
 	 */
 	private volatile long lastCrawled = 0;
+	
+	/**
+	 * Number of images that we have found
+	 */
+	private int imagesFound = 0;
 
 	/**
 	 * Construct an instance of {@link BurstSitemapCrawler} using default
@@ -86,6 +91,9 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 	 */
 	public void crawl(GenericConsumer<BurstImage> collector) {
 		LOGGER.info("Starting to crawl Shopify Burst site");
+
+		// reset stats
+		this.imagesFound = 0;
 		
 		// read sitemap file
 		List<String> sitemaps = this.readMainSitemapFile();
@@ -160,7 +168,11 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 
 			// check if its a photo
 			if (url.startsWith("https://burst.shopify.com/photos/")) {
-				LOGGER.debug("Found image url as: {}", url);
+				// increment stats
+				this.imagesFound++;
+
+				// log message
+				LOGGER.debug("Found image [{}] url as: {}", this.imagesFound, url);
 				
 				// induce delay in crawling if desired
 				long elapsed = System.currentTimeMillis() - this.lastCrawled;

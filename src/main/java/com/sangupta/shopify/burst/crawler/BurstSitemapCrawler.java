@@ -187,6 +187,7 @@ public class BurstSitemapCrawler extends AbstractBurstCrawler {
 					}
 				}
 				
+				this.lastCrawled = System.currentTimeMillis();
 				BurstImage crawledImage = this.getBurstImageFromURL(url);
 				if (crawledImage != null) {
 					boolean continueCrawling = collector.consume(crawledImage);
